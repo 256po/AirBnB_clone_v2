@@ -1,19 +1,21 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 """
-Created on Tue Sep  1 11:15:54 2020
+A script to create a route to the home displaying `Hello HBNB`
+"""
 
-@author: Robinson Montes
-"""
+
 from flask import Flask
+
+
+# initialize the application using the variable `app`
 app = Flask(__name__)
 
 
-@app.route('/', strict_slashes=False)
+@app.route('/', methods=['GET'], strict_slashes=False)
 def hello():
-    """Start a basic Flask web application"""
-    return 'Hello HBNB!'
+    '''This function returns a simple greeting'''
+    return "Hello HBNB!"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

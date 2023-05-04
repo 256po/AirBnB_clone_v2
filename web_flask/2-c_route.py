@@ -1,31 +1,35 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 """
-Created on Tue Sep  1 14:42:23 2020
+A script to display the `c` route followed by /<text>
+"""
 
-@author: Robinson Montes
-"""
+
 from flask import Flask
+
+
+# initialize the application using the variable `app`
 app = Flask(__name__)
 
 
-@app.route('/', strict_slashes=False)
+@app.route('/', methods=['GET'], strict_slashes=False)
 def hello():
-    """Start a basic Flask web application"""
-    return 'Hello HBNB!'
+    '''This function returns a simple greeting'''
+    return "Hello HBNB!"
 
 
-@app.route('/hbnb', strict_slashes=False)
+@app.route('/hbnb', methods=['GET'], strict_slashes=False)
 def hbnb():
-    """Adding a specific route /hbnb"""
-    return 'HBNB'
+    """returns a single line"""
+    return "HBNB"
 
 
-@app.route('/c/<string:text>', strict_slashes=False)
-def text(text=None):
-    """Dynamic inputed text: replace _ for space and show text"""
-    return "C {}".format(text.replace('_', ' '))
+@app.route('/c/<text>', methods=['GET'], strict_slashes=False)
+def c(text):
+    '''
+    this route returns the text given in the url
+    '''
+    return "C " + text.replace("_", " ")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

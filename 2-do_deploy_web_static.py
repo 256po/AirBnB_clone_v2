@@ -1,47 +1,43 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug 13 14:21:54 2020
-@author: Robinson Montes
-"""
-from fabric.api import local, put, run, env
+"""Helps compress the files into a .tgz archive file"""
 from datetime import datetime
+from fabric.api import *
+import os
 
+env.hosts = ['54.173.191.2', '52.86.38.179']
 env.user = 'ubuntu'
-env.hosts = ['35.227.35.75', '100.24.37.33']
 
 
 def do_pack():
-    """
-    Targginng project directory into a packages as .tgz
-    """
-    now = datetime.now().strftime("%Y%m%d%H%M%S")
-    local('sudo mkdir -p ./versions')
-    path = './versions/web_static_{}'.format(now)
-    local('sudo tar -czvf {}.tgz web_static'.format(path))
-    name = '{}.tgz'.format(path)
-    if name:
-        return name
+    """Compresses the web static files"""
+    if not os.path.exists('versions'):
+        os.makedirs('versions')
+    stamp = datetime.now().isoformat().split('.')[0].replace('-', '')\
+        .replace('T', '').replace(':', '')
+    status = local('tar -czvf versions/web_static_{}.tgz web_static'
+                   .format(stamp))
+    if status.succeeded:
+        return os.path.normpath('versions/web_static_{}.tgz'.format(stamp))
     else:
-        return None
+        return
 
 
 def do_deploy(archive_path):
-    """Deploy the boxing package tgz file
-    """
-    try:
-        archive = archive_path.split('/')[-1]
-        path = '/data/web_static/releases/' + archive.strip('.tgz')
-        current = '/data/web_static/current'
-        put(archive_path, '/tmp')
-        run('mkdir -p {}/'.format(path))
-        run('tar -xzf /tmp/{} -C {}'.format(archive, path))
-        run('rm /tmp/{}'.format(archive))
-        run('mv {}/web_static/* {}'.format(path, path))
-        run('rm -rf {}/web_static'.format(path))
-        run('rm -rf {}'.format(current))
-        run('ln -s {} {}'.format(path, current))
-        print('New version deployed!')
+    """Deploys the compressed static files to both web servers."""
+    if os.path.exists(archive_path):
+        filename = archive_path.split('/')[1].split('.')[0]
+        releases = '/data/web_static/releases'
+        put(archive_path, '/tmp/')
+        run('mkdir -p {}/{}'.format(releases, filename))
+        run('tar -xzf /tmp/{}.tgz -C {}/{}'
+            .format(filename, releases, filename))
+        run('rm -f /tmp/{}.tgz'.format(filename))
+        run('mv {}/{}/web_static/* {}/{}/'.format(releases, filename,
+            releases, filename))
+        run('rm -rf {}/{}/web_static'.format(releases, filename))
+        run('rm -rf /data/web_static/current')
+        run('ln -s {}/{} /data/web_static/current'
+            .format(releases, filename))
         return True
-    except:
+    else:
         return False
